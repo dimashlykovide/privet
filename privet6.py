@@ -1,9 +1,10 @@
 import logging
 import asyncio
 from aiogram import Bot, Dispatcher, types
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.types import ChatJoinRequest, FSInputFile, InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.enums import ParseMode
 import os
 
 # Настройка логирования
@@ -32,8 +33,11 @@ if os.path.exists(SECOND_IMAGE_PATH):
 else:
     logger.warning(f"⚠️ Изображение для второго сообщения не найдено: {SECOND_IMAGE_PATH}")
 
-# Инициализация бота
-bot = Bot(token=BOT_TOKEN)
+# Инициализация бота с правильными параметрами для aiogram 3.x
+bot = Bot(
+    token=BOT_TOKEN,
+    default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+)
 dp = Dispatcher()
 
 def create_post_button():
@@ -73,8 +77,7 @@ async def send_first_message_with_photo(user_id: int, user_first_name: str):
                 await bot.send_photo(
                     chat_id=user_id,
                     photo=photo,
-                    caption=first_message_text,
-                    parse_mode=ParseMode.HTML
+                    caption=first_message_text
                 )
                 logger.info(f"📸 Первое сообщение с фото и форматированием отправлено для {user_first_name}")
             except Exception as photo_error:
@@ -82,16 +85,14 @@ async def send_first_message_with_photo(user_id: int, user_first_name: str):
                 # Если фото не отправилось, отправляем только текст с форматированием
                 await bot.send_message(
                     chat_id=user_id,
-                    text=first_message_text,
-                    parse_mode=ParseMode.HTML
+                    text=first_message_text
                 )
                 logger.info(f"📝 Первое сообщение с форматированием без фото отправлено для {user_first_name}")
         else:
             # Если файл не найден, отправляем только текст с форматированием
             await bot.send_message(
                 chat_id=user_id,
-                text=first_message_text,
-                parse_mode=ParseMode.HTML
+                text=first_message_text
             )
             logger.info(f"📝 Первое сообщение с форматированием без фото отправлено для {user_first_name}")
         
@@ -128,7 +129,6 @@ async def send_second_message_with_photo(user_id: int, user_first_name: str):
                     chat_id=user_id,
                     photo=photo,
                     caption=second_message_text,
-                    parse_mode=ParseMode.HTML,
                     reply_markup=create_post_button()
                 )
                 logger.info(f"📸 Второе сообщение с фото и кнопкой отправлено для {user_first_name}")
@@ -138,7 +138,6 @@ async def send_second_message_with_photo(user_id: int, user_first_name: str):
                 await bot.send_message(
                     chat_id=user_id,
                     text=second_message_text,
-                    parse_mode=ParseMode.HTML,
                     reply_markup=create_post_button()
                 )
                 logger.info(f"📝 Второе сообщение с кнопкой без фото отправлено для {user_first_name}")
@@ -147,7 +146,6 @@ async def send_second_message_with_photo(user_id: int, user_first_name: str):
             await bot.send_message(
                 chat_id=user_id,
                 text=second_message_text,
-                parse_mode=ParseMode.HTML,
                 reply_markup=create_post_button()
             )
             logger.info(f"📝 Второе сообщение с кнопкой без фото отправлено для {user_first_name}")
